@@ -1,0 +1,43 @@
+{
+    "search_space": {
+        "n_estimators": {
+            "type": "int",
+            "min": 100,
+            "max": 1000,
+            "step": 50
+        },
+        "max_depth": {
+            "type": "int",
+            "min": 3,
+            "max": 10
+        },
+        "learning_rate": {
+            "type": "float",
+            "min": 0.01,
+            "max": 0.3
+        },
+        "subsample": {
+            "type": "float",
+            "min": 0.5,
+            "max": 1.0
+        },
+        "colsample_bytree": {
+            "type": "float",
+            "min": 0.5,
+            "max": 1.0
+        },
+        "gamma": {
+            "type": "float",
+            "min": 0,
+            "max": 5
+        }
+    },
+    "best_hyperparameters": {
+        "n_estimators": 750,
+        "max_depth": 10,
+        "learning_rate": 0.06726226399750983,
+        "subsample": 0.9364691215013874,
+        "colsample_bytree": 0.8158685081868302,
+        "gamma": 0.006821631325287125
+    }
+}

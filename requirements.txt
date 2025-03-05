@@ -1,0 +1,17 @@
+streamlit
+fastapi
+uvicorn
+nest-asyncio
+pydantic
+sqlalchemy
+pandas
+numpy
+shap
+pickle-mixin
+scikit-learn
+xgboost
+geopy
+plotly
+requests
+optuna
+pyngrok

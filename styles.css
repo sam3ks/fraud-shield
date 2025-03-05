@@ -1,0 +1,132 @@
+/* styles.css */
+
+:root {
+    --primary-color: #8898df;
+    --secondary-color: #3f37c9;
+    --accent-color: #4895ef;
+    --background-color: #c3c3c4;
+    --text-color: #212529;
+    --danger-color: #e63946;
+    --success-color: #38b000;
+    --warning-color: #ff9e00;
+    --light-gray: #e9ecef;
+    --header-color : #4682b4;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon styling */
+page-icon {
+    font-size: 2rem;
+    margin-left: auto;
+}
+
+.stAppHeader {
+    background-color: rgba(255, 255, 255, 0.0);  /* Transparent background */
+    visibility: visible;  /* Ensure the header is visible */
+}
+
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 0rem;
+    padding-left: 5rem;
+    padding-right: 5rem;
+}
+
+.stApp {
+    background-color: var(--background-color) !important;
+    /* background: url('https://images.unsplash.com/photo-1537724326059-2ea20251b9c8?q=80&w=1752&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed !important; */
+    color: var(--text-color) !important;
+}
+
+/* div[data-testid="stAppViewContainer"] {
+    background-color: var(--background-color) !important;
+    background: url('https://media.istockphoto.com/id/1347327761/vector/a-futuristic-glowing-credit-card-isolated-on-a-dark-blue-background-with-various-graphs-and.jpg?s=612x612&w=0&k=20&c=yG33Toq4KB30RJPvtovDky970ZlHmohl-oItilqSLLo=') no-repeat center center fixed;
+    padding: 1rem;
+} */
+/* 
+div[data-testid="stAppViewContainer"] {
+    background: url('https://images.unsplash.com/photo-1537724326059-2ea20251b9c8?q=80&w=1752&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+    background-size: cover;
+    background-attachment: fixed;
+    padding: 1rem;
+} */
+
+
+.stButton > button {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 4px !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton > button:hover {
+    background-color: var(--secondary-color) !important;
+    box-shadow: var(--card-shadow) !important;
+    transform: translateY(-2px) !important;
+}
+
+div[data-testid="stExpander"] {
+    background-color: var(--light-gray) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--card-shadow) !important;
+    margin-bottom: 1rem;
+}
+
+.stTextInput > div > div > input {
+    border: 1px solid var(--light-gray) !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+}
+
+.stSelectbox > div > div {
+    background-color: white !important;
+    border: 1px solid var(--light-gray) !important;
+    border-radius: 4px !important;
+}
+
+.reportview-container {
+    margin-top: -2em;
+}
+
+#MainMenu {
+    visibility: hidden;
+}
+
+.stAppDeployButton {
+    display: none;
+}
+
+footer {
+    visibility: hidden;
+}
+
+#stDecoration {
+    display: none;
+}
+
+/* Custom header styling */
+.main-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align:center;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.header-subtitle {
+    /* margin: 1rem; */
+    font-size: 1rem;
+    opacity: 0.9;
+    text-align: center;
+}
