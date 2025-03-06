@@ -234,24 +234,24 @@ def transaction_page():
     }
 
     # Product categories with corresponding products
-    product_categories = {
-        "Retail": [ "Books","Shoes", "Smartphone", "Jewelry", "Beauty Products"],
-        "Wallet": ["PhonePe Wallet", "Paytm Wallet", "Google Pay Wallet", "Amazon Pay Wallet"],
-        "Consumable": ["Cleaning Products", "Personal Care Products", "Health Supplements", "Fruits and Vegetables", "Medicines"],
-        "Household": ["Refrigerator", "Utensils", "Lamp", "Furniture", "Toys", "Pet Supplies"],
-        "Services": ["Streaming Subscription", "Online Course", "Cloud Storage"],
-        "Miscellaneous": ["Sports Equipment", "In-Game Purchases"]
-    }
+    product_categories =  {
+            "Retail": ["Shoes", "Smartphone", "Jewelry", "Beauty Products","Books"],
+            "Wallet": ["PhonePe Wallet", "Paytm Wallet", "Google Pay Wallet", "Amazon Pay Wallet"],
+            "Consumable": ["Cleaning Products", "Personal Care Products", "Health Supplements", "Fruits and Vegetables","Medicines"],
+            "Household": ["Refrigerator", "Utensils", "Lamp", "Furniture"],  
+            "Services": ["Streaming Subscription", "Online Course", "Cloud Storage"],
+            "Miscellaneous": ["Sports Equipment", "Toys", "In-Game Purchases", "Pet Supplies"]
+        }
 
     product_to_category = {product: category for category, products in product_categories.items() for product in products}
 
     merchant_options = {
         "Wallet": ["Flipkart", "Amazon", "Google Play", "BigBasket", "Uber", "Zomato", "Swiggy Instamart"],
-        "Consumable": ["BigBasket", "Blinkit", "DMart", "JioMart", "Swiggy Instamart", "Zepto", "Nature’s Basket", "MilkBasket"],
+        "Consumable": ["BigBasket", "Blinkit", "DMart", "JioMart", "Swiggy Instamart", "Zepto", "Netmeds", "Practo", "PharmEasy","Nature’s Basket", "MilkBasket"],
         "Retail": ["Flipkart", "Amazon", "Reliance Digital", "Croma", "Tata Cliq", "Myntra", "Nykaa", "Ajio", "Meesho", "Snapdeal"],
         "Household": ["IKEA", "Urban Ladder", "PepperFry", "Wakefit", "Home Centre", "Nilkamal", "Durian", "Godrej Interio", "Hometown"],
         "Services": ["Netflix", "Amazon Prime", "Hotstar", "Spotify", "Zee5", "JioSaavn", "Unacademy", "Byju's", "ALT Balaji", "Sony LIV", "Audable", "Coursera", "Udemy", "Skillshare"],
-        "Miscellaneous": ["Dream11", "RummyCircle", "PokerBaazi", "MPL", "Decathlon", "FirstCry", "Tata 1mg", "1x BET", "Betway", "Lottoland", "WinZO", "Nazara Games", "Netmeds", "Practo", "PharmEasy"]
+        "Miscellaneous": ["Dream11", "RummyCircle", "PokerBaazi", "MPL", "Decathlon", "FirstCry", "Tata 1mg", "1x BET", "Betway", "Lottoland", "WinZO", "Nazara Games"]
     }
     product_images = {
                             "PhonePe Wallet": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnyOoxY1k_Hj78I_Vb6S9sP4qV4cL5HkRzsa_7s5_ScOF5FSnIYXSWSwDXOE3xR6KHEu0&usqp=CAU",
@@ -319,6 +319,14 @@ def transaction_page():
 
             with st.expander("⌛ **Transaction Date & Time**", expanded=True):
                 # Use date_input for selecting day, month, and year via a calendar
+                # Ensure session state is initialized
+                if "transaction_time" not in st.session_state:
+                    st.session_state.transaction_time = datetime.now().strftime("%H:%M:%S")
+
+                if "transaction_dt" not in st.session_state:
+                    st.session_state.transaction_dt = None  # Placeholder for combined date-time
+
+                # Date Input
                 transaction_date = st.date_input(
                     "Transaction Date",
                     value=datetime.now(),
@@ -326,28 +334,29 @@ def transaction_page():
                     max_value=datetime(2030, 12, 31),
                     help="Select the date of the transaction using the calendar."
                 )
-                
-                # Use text_input for manually entering the time
+
+                # Text Input for Time (Using session state)
                 transaction_time = st.text_input(
                     "Transaction Time (HH:MM:SS)",
-                    value=datetime.now().strftime("%H:%M:%S"),  # Default to current time
-                    max_chars=8,  # Limit to "HH:MM:SS" length
+                    value=st.session_state.transaction_time,  # Use stored value
+                    max_chars=8,
                     help="Enter the time in HH:MM:SS format (e.g., 14:30:00)"
                 )
-                
-                # Validate and combine date and time
-                time_pattern = re.compile(r"^\d{2}:\d{2}:\d{2}$")  # Regex for HH:MM:SS
+
+                # Validate Time Input
+                time_pattern = re.compile(r"^\d{2}:\d{2}:\d{2}$")  # HH:MM:SS Format
                 if time_pattern.match(transaction_time):
+                    st.session_state.transaction_time = transaction_time  # Store valid time
                     try:
-                        # Combine date and time into a datetime object and format it
+                        # Combine Date and Time
                         transaction_dt = datetime.strptime(
-                            f"{transaction_date} {transaction_time}", "%Y-%m-%d %H:%M:%S"
+                            f"{transaction_date} {st.session_state.transaction_time}",
+                            "%Y-%m-%d %H:%M:%S"
                         ).strftime("%Y-%m-%d %H:%M:%S")
-                        st.session_state.transaction_dt = transaction_dt
-                        # st.write(f"Transaction Time: {transaction_dt}")
+                        
+                        st.session_state.transaction_dt = transaction_dt  # Store combined value
                     except ValueError:
                         st.error("Invalid time format! Please enter a valid time (e.g., 14:30:00).")
-                        transaction_dt = st.session_state.transaction_dt  # Keep previous valid value
                 else:
                     st.error("Time must be in HH:MM:SS format (e.g., 14:30:00).")
                     transaction_dt = st.session_state.transaction_dt  # Keep previous valid value
@@ -360,9 +369,10 @@ def transaction_page():
                 if "masked_input" not in st.session_state:
                     st.session_state.masked_input = ""        
 
+                card_number="9874569832541458"   
+                st.session_state.masked_input = mask_card_number(card_number) 
                 # Text input (password type) without the eye icon
-                card_number = st.text_input("Enter Card Number", placeholder="Enter Card Number", value="9874569832541458")
-
+                CN = st.text_input("Enter Card Number", placeholder="Enter Card Number", value=st.session_state.masked_input)
                 # # Only store numeric values (prevent masking errors)
                 # if user_input.isdigit():
                 #     st.session_state.card_number = user_input
@@ -579,38 +589,44 @@ def transaction_page():
                     st.session_state.otp_verified = True
                     st.session_state.transaction_verified = True
                     st.markdown(
-                            """
-                            <div style="background-color:#DFF2BF; padding: 15px; border-radius: 10px;">
-                            <h3 style="color:#4F8A10;"> <b>Transaction is Legit!</b> </h3>
-                            <p>Your transaction has been <b>successfully processed</b>. No further action is required.</p>
-                            <h4>🎉 Thank you for using our service! Have a great day ahead! 😊</h4>
-                            </div>
-                            """, unsafe_allow_html=True
-                        )
+                                            """
+                                            <div style="background-color:#DFF2BF; padding: 15px; border-radius: 10px;">
+                                                <h3 style="color:#4F8A10;"><b>Transaction Approved</b></h3>
+                                                <p>Your transaction has been successfully processed. No further action is required.</p>
+                                                <h4>Thank you for choosing our service.</h4>
+                                            </div>
+                                            """, 
+                                            unsafe_allow_html=True
+                                        )
+
                     fraud_meter(st.session_state.transaction_result)
                     display_top_features(st.session_state.transaction_result) 
         
                 elif fraud_probability <= 0.3:
-                    st.markdown("""
-                                        <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
-                                        <h3 style="color:#9F6000;">Transaction Suspicious!</h3>
-                                        <p>Your transaction appears to be suspicious. An OTP has been sent to your registered mobile number for verification.</p>
-                                        </div>
-                                    """, unsafe_allow_html=True)
+                    st.markdown(
+                                            """
+                                            <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
+                                                <h3 style="color:#9F6000;"><b>Suspicious Transaction Detected</b></h3>
+                                                <p>This transaction requires additional verification. An OTP has been sent to your registered mobile number.</p>
+                                            </div>
+                                            """, 
+                                            unsafe_allow_html=True
+                                        )
 
                         # if st.button("Go to OTP Verification"):
                     st.session_state.show_otp_page = True
                     st.rerun()
                 else:
                     st.markdown(
-                            """
-                            <div style="background-color:#FFCCCC; padding: 15px; border-radius: 10px;">
-                            <h3 style="color:#D8000C;"> <b>Transaction is Fraudulent!</b> </h3>
-                            <p>Your transaction has been <b>flagged as potentially fraudulent</b> and is currently <b>on hold</b>.
-                            Please contact our <b>customer support team</b> for further assistance and verification.</p>
-                            </div>
-                            """, unsafe_allow_html=True
-                        )
+                                """
+                                <div style="background-color:#FFCCCC; padding: 15px; border-radius: 10px;">
+                                    <h3 style="color:#D8000C;"><b>Fraudulent Transaction Detected</b></h3>
+                                    <p>This transaction has been flagged as potentially fraudulent and is currently on hold.  
+                                    Please contact our customer support team for further verification and assistance.</p>
+                                </div>
+                                """, 
+                                unsafe_allow_html=True
+                            )
                     fraud_meter(st.session_state.transaction_result)
                     display_top_features(st.session_state.transaction_result) 
             else:
@@ -621,13 +637,15 @@ def transaction_page():
         
 def otp_page():
     st.title("OTP Verification Page")
-    st.markdown("""
-        <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
-        <h3 style="color:#9F6000;">⚠️ Transaction Suspicious! ⚠️</h3>
-        <p>Your transaction appears to be suspicious. An OTP has been sent to your registered mobile number for verification.</p>
-        <p><b>Please enter the OTP below to proceed:</b></p>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+                """
+                <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
+                    <h3 style="color:#9F6000;"><b>Suspicious Transaction Detected</b></h3>
+                    <p>This transaction requires additional verification. An OTP has been sent to your registered mobile number.</p>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
     fraud_meter(st.session_state.transaction_result)
     display_top_features(st.session_state.transaction_result) 
     
@@ -638,13 +656,16 @@ def otp_page():
         if user_otp == "123456":  # Replace with actual OTP logic
             st.session_state.otp_verified = True
             st.session_state.show_otp_page = False  # Return to main transaction page
-            st.markdown("""
-                            <div style="background-color:#DFF2BF; padding: 15px; border-radius: 10px;">
-                                <h3 style="color:#4F8A10;"><b>OTP Verified Successfully</b></h3>
-                                <p>Your OTP has been successfully verified, and the transaction has been <b>marked as legit</b>.</p>
-                                <h4>🎉 Thank you for using our service! Have a great day ahead! 😊</h4>
-                            </div>
-                        """, unsafe_allow_html=True)
+            st.markdown(
+                        """
+                        <div style="background-color:#DFF2BF; padding: 15px; border-radius: 10px;">
+                            <h3 style="color:#4F8A10;"><b>OTP Verified Successfully</b></h3>
+                            <p>Your OTP has been successfully verified. The transaction has been approved.</p>
+                            <h4>Thank you for choosing our service.</h4>
+                        </div>
+                        """, 
+                        unsafe_allow_html=True
+                    )
             
             # Show Complete Transaction button after OTP verification
             if st.button("Complete Transaction"):

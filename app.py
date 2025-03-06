@@ -274,10 +274,6 @@ async def check_transaction_fraud(transaction: TransactionIn, db: Session = Depe
         transaction_dict = {col.name: getattr(db_transaction, col.name) for col in Transaction.__table__.columns}
         transaction_df = pd.DataFrame([transaction_dict])
 
-        # Load model
-        with open(path, "rb") as model_file:
-            model = pickle.load(model_file)
-
         # Get expected features
         expected_features = model.feature_names_in_
         column_mapping = {
