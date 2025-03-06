@@ -1,18 +1,6 @@
-import os
 import shap
-import sys
 import pickle
 from geopy.distance import geodesic
-
-def install_xgboost():
-    try:
-        import xgboost
-        print("xgboost is already installed.")
-    except ImportError:
-        print("Installing xgboost...")
-        os.system(f"{sys.executable} -m pip install xgboost")
-        print("xgboost installation complete.")
-
 import uvicorn
 import nest_asyncio
 from datetime import datetime
@@ -30,6 +18,18 @@ nest_asyncio.apply()
 
 # Initialize FastAPI app
 app = FastAPI()
+
+# Path to the pre-trained fraud detection model
+MODEL_PATH = "src/models/xgb_fraud_model.pkl"
+
+# Load the XGBoost model
+try:
+    with open(MODEL_PATH, "rb") as model_file:
+        model = pickle.load(model_file)
+    print(f"✅ Model loaded successfully from {MODEL_PATH}")
+except FileNotFoundError:
+    print(f"❌ ERROR: Model file not found at {MODEL_PATH}. Ensure the file exists.")
+    model = None
 
 # Database setup
 DATABASE_URL = "sqlite:///./test.db"
@@ -410,6 +410,4 @@ async def check_transaction_fraud(transaction: TransactionIn, db: Session = Depe
         }
 
 if __name__ == "__main__":
-    path = str(input("Please Enter your Model.pkl path: "))
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    install_xgboost()

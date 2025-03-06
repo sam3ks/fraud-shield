@@ -1,0 +1,107 @@
+{
+    "info": {
+        "name": "Transaction Fraud Check API",
+        "_postman_id": "transaction-fraud-check-api",
+        "description": "Collection for testing Transaction Fraud Check API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Check Transaction Fraud",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"TransactionID\": \"TXN123456\",\n    \"TransactionAmt\": 150.75,\n    \"TransactionDT\": \"2025-03-05T10:30:00\",\n    \"CardNumber\": \"4111111111111111\",\n    \"User_ID\": \"USER123\",\n    \"BINNumber\": \"411111\",\n    \"CardNetwork\": \"Visa\",\n    \"CardTier\": \"Platinum\",\n    \"CardType\": \"Credit\",\n    \"PhoneNumbers\": \"+1-555-123-4567\",\n    \"User_Region\": \"US-East\",\n    \"Order_Region\": \"US-West\",\n    \"Receiver_Region\": \"US-West\",\n    \"Sender_Email\": \"sender@example.com\",\n    \"Merchant\": \"OnlineStore Inc.\",\n    \"Merchant_Email\": \"merchant@example.com\",\n    \"DeviceType\": \"Mobile\",\n    \"DeviceInfo\": \"iPhone 13\"\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/transaction_fraud_check",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "transaction_fraud_check"
+                    ]
+                },
+                "description": "Check a transaction for potential fraud"
+            },
+            "response": [
+                {
+                    "name": "Successful Fraud Detection",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{request_body}}"
+                        },
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/transaction_fraud_check",
+                            "protocol": "http",
+                            "host": [
+                                "127.0.0.1"
+                            ],
+                            "port": "8000",
+                            "path": [
+                                "transaction_fraud_check"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n    \"status\": \"success\",\n    \"transaction_stored\": true,\n    \"transaction_id\": \"TXN123456\",\n    \"Distance\": 1234.56,\n    \"fraud_detection\": {\n        \"is_fraud\": false,\n        \"fraud_probability\": 0.23456\n    },\n    \"transaction_details\": {\n        \"Transaction\": \"TXN123456\",\n        \"Amount\": 150.75,\n        \"Datetime\": \"2025-03-05T10:30:00\",\n        \"Merchant\": \"OnlineStore Inc.\",\n        \"Region\": \"US-West\"\n    }\n}"
+                },
+                {
+                    "name": "Error Response",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{{request_body}}"
+                        },
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/transaction_fraud_check",
+                            "protocol": "http",
+                            "host": [
+                                "127.0.0.1"
+                            ],
+                            "port": "8000",
+                            "path": [
+                                "transaction_fraud_check"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "body": "{\n    \"status\": \"error\",\n    \"message\": \"An error occurred during fraud detection\"\n}"
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://127.0.0.1:8000"
+        }
+    ]
+}
