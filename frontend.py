@@ -83,7 +83,7 @@ def display_top_features(result):
                 "TransactionAmt": "Fraudsters often attempt high-value transactions to maximize their profit before detection.",
                 "TransactionDT": "Suspicious transactions may occur at unusual hours, revealing fraudulent patterns.",
                 "ProductCD": "Certain product categories are more prone to fraud, like high-value electronics or gift cards.",
-                "User_ID": "Multiple User_IDs linked to the same card or region can indicate identity theft.",
+                "UserID": "Multiple User_IDs linked to the same card or region can indicate identity theft.",
                 "Merchant": "Transactions with high-risk merchants or unfamiliar vendors may signal fraud.",
                 "CardNumber": "Unusual or rarely used card numbers are a red flag for fraudulent activity.",
                 "BINNumber": "BIN anomalies suggest cards from suspicious or blacklisted banks.",
@@ -91,14 +91,40 @@ def display_top_features(result):
                 "CardTier": "High-tier cards (Platinum, Gold) are often targeted for their high credit limits.",
                 "CardType": "Credit cards are more susceptible to fraud than debit cards due to higher limits.",
                 "PhoneNumbers": "Multiple phone numbers linked to a single user can suggest account takeovers.",
-                "User_Region": "Transactions from unexpected regions could indicate a compromised account.",
-                "Order_Region": "A mismatch between user and order regions is a sign of potential fraud.",
-                "Receiver_Region": "Unusual receiver regions may reveal cross-district fraud.",
+                "UserRegion": "Transactions from unexpected regions could indicate a compromised account.",
+                "OrderRegion": "A mismatch between user and order regions is a sign of potential fraud.",
+                "ReceiverRegion": "Unusual receiver regions may reveal cross-district fraud.",
                 "Distance": "Large distances between billing and transaction locations can raise suspicion.",
-                "Sender_email": "New or uncommon email domains may be tied to fraudulent activity.",
-                "Merchant_email": "Merchants with unverified or mismatched emails are a risk factor.",
+                "SenderEmail": "New or uncommon email domains may be tied to fraudulent activity.",
+                "MerchantEmail": "Merchants with unverified or mismatched emails are a risk factor.",
                 "DeviceType": "Device changes (mobile vs. desktop) can indicate unauthorized access.",
                 "DeviceInfo": "Using unknown or outdated devices might signal a fraud attempt.",
+                "TransactionTimeSlot": "Transactions in low-activity time slots may indicate automated fraud.",
+                "HourWithinTimeSlot": "Irregular hours within a low-activity time slot can hint at suspicious behavior.",
+                "TransactionWeekday": "Fraudulent activities often spike on weekends or holidays.",
+                "AvgTransactionInterval": "Short transaction intervals may indicate rapid fraudulent purchases.",
+                "TransactionAmountVariance": "High variance in transaction amounts suggests inconsistent activity.",
+                "TransactionRatio": "An unusual transaction ratio may highlight fraud-prone accounts.",
+                "MedianTransactionAmount": "Deviations from median amounts can expose fraudulent behavior.",
+                "AvgTransactionAmtIn24Hrs": "Spikes in daily transaction amounts might reveal fraud bursts.",
+                "TransactionVelocity": "A high volume of quick transactions could be fraud bot behavior.",
+                "TimingAnomaly": "Unusual transaction times can be a strong fraud indicator.",
+                "RegionAnomaly": "Transactions in rare regions may uncover regional fraud schemes.",
+                "HourlyTransactionCount": "A sudden surge in hourly transactions often signals bot attacks.",
+                "DaysSinceLastTransac": "A long gap followed by sudden activity may reflect card testing fraud.",
+                "SameCardDaysDiff": "Quick repeat use of the same card raises fraud alarms.",
+                "SameAddressDaysDiff": "Repeated transactions from the same address could be fraud stacking.",
+                "SameMerchantEmailDaysDiff": "Multiple fast transactions to the same receiver hint at scams.",
+                "SameDeviceTypeDaysDiff": "A device consistently linked to fraud shows suspicious behavior.",
+                "TransactionCount": "Unusually high transaction counts per card may indicate abuse.",
+                "UniqueMerchants": "Frequent transactions across various merchants can expose fraud rings.",
+                "SameOrderRegionCount": "A high count of same billing regions might show location spoofing.",
+                "SameDeviceCount": "Multiple transactions from the same device can indicate a bot.",
+                "UniqueOrderRegion": "Transactions from diverse regions in quick succession suggest fraud.",
+                "DeviceMatching": "Matching devices indicate normal behavior; mismatches hint at fraud.",
+                "DeviceMismatch": "Device mismatches are a strong fraud risk factor.",
+                "RegionMismatch": "A billing and transaction region mismatch suggests unauthorized activity.",
+                "TransactionConsistency": "Inconsistent transaction patterns indicate suspicious behavior."
             }
 
             # Create a custom hover template for better explanations
@@ -224,14 +250,38 @@ def transaction_page():
             return False, f"Error: {str(e)}"
 
     # Default amounts for each product category
-    default_amounts = {
-        "Wallet": 2500.00,
-        "Consumable": 300.00,
-        "Retail": 1200.00,
-        "Household": 800.00,
-        "Services": 499.00,
-        "Miscellaneous": 650.00
-    }
+    default_amounts =  {
+                        "Shoes": 1500.00,  # Average cost for mid-range shoes
+                        "Smartphone": 15000.00,  # Mid-range smartphone
+                        "Jewelry": 20000.00,  # Standard gold or silver jewelry
+                        "Beauty Products": 1000.00,  # Cosmetics & skincare
+                        "Books": 500.00,  # General book price
+
+                        "PhonePe Wallet": 1000.00,  # Typical wallet balance or transaction
+                        "Paytm Wallet": 1000.00,
+                        "Google Pay Wallet": 1000.00,
+                        "Amazon Pay Wallet": 1000.00,
+
+                        "Cleaning Products": 500.00,  # Detergents, surface cleaners, etc.
+                        "Personal Care Products": 800.00,  # Shampoo, soap, skincare items
+                        "Health Supplements": 2000.00,  # Protein, vitamins, etc.
+                        "Fruits and Vegetables": 500.00,  # Weekly grocery estimate
+                        "Medicines": 1000.00,  # General prescription medicines
+
+                        "Refrigerator": 25000.00,  # Mid-range fridge
+                        "Utensils": 2000.00,  # Cookware set
+                        "Lamp": 1500.00,  # Decorative or functional lamp
+                        "Furniture": 20000.00,  # Sofa, table, or bed
+
+                        "Streaming Subscription": 500.00,  # Monthly cost for Netflix, Prime, etc.
+                        "Online Course": 5000.00,  # Udemy, Coursera, etc.
+                        "Cloud Storage": 1000.00,  # Google Drive, iCloud, etc.
+
+                        "Sports Equipment": 3000.00,  # Rackets, dumbbells, etc.
+                        "Toys": 1500.00,  # Mid-range toys
+                        "In-Game Purchases": 1000.00,  # Virtual currency, skins
+                        "Pet Supplies": 2000.00,  # Food, toys, accessories
+                    }
 
     # Product categories with corresponding products
     product_categories =  {
@@ -247,7 +297,7 @@ def transaction_page():
 
     merchant_options = {
         "Wallet": ["Flipkart", "Amazon", "Google Play", "BigBasket", "Uber", "Zomato", "Swiggy Instamart"],
-        "Consumable": ["BigBasket", "Blinkit", "DMart", "JioMart", "Swiggy Instamart", "Zepto", "Netmeds", "Practo", "PharmEasy","Nature’s Basket", "MilkBasket"],
+        "Consumable": ["BigBasket", "Blinkit", "DMart", "JioMart", "Swiggy Instamart", "Zepto", "Netmeds", "Practo", "PharmEasy","MilkBasket"],
         "Retail": ["Flipkart", "Amazon", "Reliance Digital", "Croma", "Tata Cliq", "Myntra", "Nykaa", "Ajio", "Meesho", "Snapdeal"],
         "Household": ["IKEA", "Urban Ladder", "PepperFry", "Wakefit", "Home Centre", "Nilkamal", "Durian", "Godrej Interio", "Hometown"],
         "Services": ["Netflix", "Amazon Prime", "Hotstar", "Spotify", "Zee5", "JioSaavn", "Unacademy", "Byju's", "ALT Balaji", "Sony LIV", "Audable", "Coursera", "Udemy", "Skillshare"],
@@ -297,7 +347,7 @@ def transaction_page():
     # Create merchant email mapping
     def get_merchant_email(category, merchant):
         if merchant:
-            return f"{category.lower()}@{merchant.lower().replace(' ', '')}.com"
+            return f"{category.lower()}@{merchant.lower()}.com".replace(' ', '')
         return ""
 
     # UI Layout: Top bar with profile icon
@@ -320,14 +370,9 @@ def transaction_page():
             with st.expander("⌛ **Transaction Date & Time**", expanded=True):
                 # Use date_input for selecting day, month, and year via a calendar
                 # Ensure session state is initialized
-                if "transaction_time" not in st.session_state:
-                    st.session_state.transaction_time = datetime.now().strftime("%H:%M:%S")
-
-                if "transaction_dt" not in st.session_state:
-                    st.session_state.transaction_dt = None  # Placeholder for combined date-time
-
+            
                 # Date Input
-                transaction_date = st.date_input(
+                st.session_state.transaction_date = st.date_input(
                     "Transaction Date",
                     value=datetime.now(),
                     min_value=datetime(2020, 1, 1),
@@ -336,7 +381,7 @@ def transaction_page():
                 )
 
                 # Text Input for Time (Using session state)
-                transaction_time = st.text_input(
+                st.session_state.transaction_time = st.text_input(
                     "Transaction Time (HH:MM:SS)",
                     value=st.session_state.transaction_time,  # Use stored value
                     max_chars=8,
@@ -345,16 +390,16 @@ def transaction_page():
 
                 # Validate Time Input
                 time_pattern = re.compile(r"^\d{2}:\d{2}:\d{2}$")  # HH:MM:SS Format
-                if time_pattern.match(transaction_time):
-                    st.session_state.transaction_time = transaction_time  # Store valid time
+                if time_pattern.match(st.session_state.transaction_time):
+                    # st.session_state.transaction_time = transaction_time  # Store valid time
                     try:
                         # Combine Date and Time
-                        transaction_dt = datetime.strptime(
-                            f"{transaction_date} {st.session_state.transaction_time}",
+                        st.session_state.transaction_dt = datetime.strptime(
+                            f"{st.session_state.transaction_date} {st.session_state.transaction_time}",
                             "%Y-%m-%d %H:%M:%S"
                         ).strftime("%Y-%m-%d %H:%M:%S")
                         
-                        st.session_state.transaction_dt = transaction_dt  # Store combined value
+                         # Store combined value
                     except ValueError:
                         st.error("Invalid time format! Please enter a valid time (e.g., 14:30:00).")
                 else:
@@ -362,29 +407,28 @@ def transaction_page():
                     transaction_dt = st.session_state.transaction_dt  # Keep previous valid value
     
 
-            with st.expander("💳 **Card Details**", expanded=True):
-                # if "card_number" not in st.session_state:
-                #     st.session_state.card_number = ""   
+            with st.expander("💳 **Card Details**", expanded=True):   
 
                 if "masked_input" not in st.session_state:
                     st.session_state.masked_input = ""        
-
-                card_number="9874569832541458"   
-                st.session_state.masked_input = mask_card_number(card_number) 
+                   
+                st.session_state.masked_input = mask_card_number(st.session_state.card_number) 
                 # Text input (password type) without the eye icon
-                CN = st.text_input("Enter Card Number", placeholder="Enter Card Number", value=st.session_state.masked_input)
-                # # Only store numeric values (prevent masking errors)
-                # if user_input.isdigit():
-                #     st.session_state.card_number = user_input
-                #     st.session_state.masked_input = mask_card_number(user_input)
+                card_number_input = st.text_input("Enter Card Number", placeholder="Enter Card Number", value=st.session_state.masked_input)
+                if card_number_input != st.session_state.masked_input:
+                    st.session_state.card_number = card_number_input         
                 
-                # card_number = st.session_state.card_number
+                card_number =st.session_state.card_number
                 bin_number  =card_number[:6] if len(card_number) >= 6 else "" 
+                st.session_state.bin_number=bin_number
 
             with st.expander("📋 **Card Specifications**", expanded=True):
-                card_network = st.radio("Card Network", ["Visa", "Mastercard", "American Express", "Rupay"], horizontal=True)
-                card_tier = st.radio("Card Tier", ["Silver", "Gold","Black" ,"Platinum"], horizontal=True)
-                card_type = st.radio("Card Type", ["Debit", "Credit", "Prepaid"], horizontal=True)
+                card_network = st.radio("Card Network", ["Visa", "Mastercard", "American Express", "Rupay"], horizontal=True, index=["Visa", "Mastercard", "American Express", "Rupay"].index(st.session_state.card_network))
+                st.session_state.card_network=card_network
+                card_tier = st.radio("Card Tier", ["Silver", "Gold","Black" ,"Platinum"], horizontal=True,index=["Silver", "Gold", "Black", "Platinum"].index(st.session_state.card_tier))
+                st.session_state.card_tier=card_tier
+                card_type = st.radio("Card Type", ["Debit", "Credit", "Prepaid"], horizontal=True,index=["Debit", "Credit", "Prepaid"].index(st.session_state.card_type))
+                st.session_state.card_type=card_type
 
             with st.expander("📞 **Contact & Region**", expanded=True):
                 user_id = st.text_input("User ID", placeholder="Enter a valid User ID",value="1234")
@@ -396,8 +440,10 @@ def transaction_page():
                             st.error("User ID must be at most 6 digits")
                         if len(user_id) < 1:
                             st.error("User ID must be at least 1 digit")
+                st.session_state.user_id=user_id            
 
                 phone_number = st.text_input("Phone Number", placeholder="+91 XXXXXXXXXX", help=phone_number_tooltip,value="+91 1234567891")
+                st.session_state.phone_number=phone_number
                 if phone_number and not re.match(r'^\+91\s\d{10}$', phone_number):
                     st.error("Phone number must be in the format: +91 XXXXXXXXXX")
 
@@ -408,7 +454,8 @@ def transaction_page():
                     "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
                     "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"
                 ]
-                user_region = st.selectbox("User Region", region)
+                user_region = st.selectbox("User Region", region,index=region.index(st.session_state.user_region))
+                st.session_state.user_region = user_region
                 sender_email = st.text_input(
                     "Sender Email",
                     value=st.session_state.sender_email,
@@ -439,7 +486,9 @@ def transaction_page():
                     "Huawei": "Mobile"
                 }
                 device_info = st.selectbox("Device Info", list(device_info_to_type.keys()))
+                st.session_state.device_info=device_info
                 device_type = device_info_to_type.get(device_info, "Unknown")
+                st.session_state.device_type=device_type
                 # st.markdown(f"**Device Type:** :blue[{device_type}]")
 
                 merchant_email = st.text_input(
@@ -466,11 +515,12 @@ def transaction_page():
             st.session_state.selected_product = selected_product
             
             st.session_state.selected_category = product_to_category[selected_product]
-            st.session_state.transaction_amount = default_amounts[st.session_state.selected_category]
+            st.session_state.transaction_amount = default_amounts[st.session_state.selected_product]
 
             merchants = merchant_options.get(st.session_state.selected_category, [])
             st.session_state.selected_merchant = merchants[0] if merchants else None
             st.session_state.merchant_email = get_merchant_email(st.session_state.selected_category, st.session_state.selected_merchant)
+            st.rerun()
 
         category = st.session_state.selected_category
         merchants = merchant_options.get(category, [])
@@ -482,6 +532,7 @@ def transaction_page():
         if selected_merchant != st.session_state.selected_merchant:
             st.session_state.selected_merchant = selected_merchant
             st.session_state.merchant_email = get_merchant_email(category, selected_merchant)
+            st.rerun()
 
     with st.expander("💵 **Transaction Details**", expanded=True):
         col1 = st.columns(1)[0]
@@ -512,7 +563,7 @@ def transaction_page():
     st.divider()
     if st.button("**Submit Transaction**", use_container_width=True, key="submit_transaction_2"):
         errors = []
-        if not transaction_dt.strip():
+        if not st.session_state.transaction_dt.strip():
             errors.append("Transaction Date & Time is required!")
         if transaction_amt <= 0:
             errors.append("Transaction Amount must be greater than 0!")
@@ -520,28 +571,28 @@ def transaction_page():
             errors.append("Product Category is required!")
         if not selected_merchant:
             errors.append("Merchant is required!")
-        if not order_region:
-            errors.append("Order Region is required!")
+        if not st.session_state.user_region:
+            errors.append("User Region is required!")
         if not receiver_region:
             errors.append("Receiver Region is required!")
-        if not user_region:
-            errors.append("User Region is required!")
+        if not order_region:
+            errors.append("order Region is required!")
         if not st.session_state.merchant_email.strip():
             errors.append("Merchant Email is required!")
-        if not card_number:
+        if not st.session_state.card_number:
             errors.append("Card Number is required!")
-        if not bin_number:
-            errors.append("BIN Number is required!")
-        if not phone_number:
+        # if not bin_number:
+        #     errors.append("BIN Number is required!")
+        if not st.session_state.phone_number:
             errors.append("Phone number is required!")
         if not st.session_state.sender_email:
             errors.append("Sender Email is required!")
-        if not user_id:
+        if not st.session_state.user_id:
             errors.append("User ID is required!")
-        if not validate_card_number(card_number):
+        if not validate_card_number(st.session_state.card_number):
             errors.append("Invalid Card Number!")
-        if not validate_bin_number(bin_number):
-            errors.append("Invalid BIN Number!")
+        # if not validate_bin_number(st.session_state.bin_number):
+        #     errors.append("Invalid BIN Number!")
         if not validate_email(st.session_state.sender_email):
             errors.append("Invalid Sender Email format!")
         if not validate_email(st.session_state.merchant_email):
@@ -553,28 +604,44 @@ def transaction_page():
         else:
             # Generate transaction_id using current timestamp (Unix epoch in milliseconds)
             transaction_id = int(time.time() * 1000) # Unique integer based on milliseconds
+            device_info_to_type= {
+                    "Windows": "Desktop",
+                    "Linux":"Desktop",
+                    "MacOS": "Desktop",
+                    "iOS Device": "Mobile",
+                    "Android": "Mobile",
+                    "Samsung": "Mobile",
+                    "Redmi": "Mobile",
+                    "Realme": "Mobile",
+                    "Oppo": "Mobile",
+                    "Vivo": "Mobile",
+                    "Motorola": "Mobile",
+                    "Pixel": "Mobile",
+                    "Poco": "Mobile",
+                    "Huawei": "Mobile"
+                }  
 
             # Prepare transaction data
             transaction_data = {
                 "TransactionID": transaction_id,
                 "TransactionAmt": float(transaction_amt),
-                "TransactionDT": transaction_dt,
+                "TransactionDT": st.session_state.transaction_dt,
                 "ProductCD": st.session_state.selected_category,
-                "User_ID": int(user_id),
+                "User_ID": int(st.session_state.user_id),
                 "Merchant": selected_merchant,
-                "BINNumber": bin_number,
-                "CardNumber": card_number,
-                "CardNetwork": card_network,
-                "CardTier": card_tier,
-                "CardType": card_type,
-                "PhoneNumbers": phone_number,
-                "User_Region": user_region,
+                "BINNumber": st.session_state.bin_number,
+                "CardNumber": st.session_state.card_number,
+                "CardNetwork": st.session_state.card_network,
+                "CardTier": st.session_state.card_tier,
+                "CardType": st.session_state.card_type,
+                "PhoneNumbers": st.session_state.phone_number,
+                "User_Region": st.session_state.user_region,
                 "Order_Region": order_region,
                 "Receiver_Region": receiver_region,
                 "Sender_email": st.session_state.sender_email,
                 "Merchant_email": st.session_state.merchant_email,
-                "DeviceInfo": device_info,
-                "DeviceType": device_info_to_type.get(device_info, "Unknown")
+                "DeviceInfo": st.session_state.device_info,
+                "DeviceType": device_info_to_type.get(st.session_state.device_info, "Unknown")
             }
 
             # Send data to backend
@@ -585,7 +652,7 @@ def transaction_page():
                 fraud_probability = result["fraud_detection"]["fraud_probability"]
                     
                     # Determine the transaction status
-                if  fraud_probability > 0.6:
+                if  fraud_probability <= 0.23:
                     st.session_state.otp_verified = True
                     st.session_state.transaction_verified = True
                     st.markdown(
@@ -602,7 +669,7 @@ def transaction_page():
                     fraud_meter(st.session_state.transaction_result)
                     display_top_features(st.session_state.transaction_result) 
         
-                elif fraud_probability <= 0.3:
+                elif fraud_probability > 0.23 and fraud_probability <= 0.47:
                     st.markdown(
                                             """
                                             <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
@@ -679,6 +746,29 @@ def otp_page():
 
         
 def main():
+    region = [
+                    "Bengaluru Urban","Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural",  "Bidar",
+                    "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
+                    "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
+                    "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
+                    "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"
+                ]
+    device_info_to_type= {
+                    "Windows": "Desktop",
+                    "Linux":"Desktop",
+                    "MacOS": "Desktop",
+                    "iOS Device": "Mobile",
+                    "Android": "Mobile",
+                    "Samsung": "Mobile",
+                    "Redmi": "Mobile",
+                    "Realme": "Mobile",
+                    "Oppo": "Mobile",
+                    "Vivo": "Mobile",
+                    "Motorola": "Mobile",
+                    "Pixel": "Mobile",
+                    "Poco": "Mobile",
+                    "Huawei": "Mobile"
+                }            
     if "otp" not in st.session_state:
         st.session_state.otp = "123456"  # Simulated OTP (Replace with real OTP generation)
     if "otp_verified" not in st.session_state:
@@ -691,6 +781,32 @@ def main():
         st.session_state.transaction_verified = False       
     if 'show_otp_page' not in st.session_state:
         st.session_state.show_otp_page = False  
+    if "transaction_time" not in st.session_state:
+        st.session_state.transaction_time = datetime.now().strftime("%H:%M:%S")   
+    if "transaction_dt" not in st.session_state:
+        st.session_state.transaction_dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if "transaction_date" not in st.session_state:
+        st.session_state.transaction_date = datetime.now().date() 
+    if "card_number" not in st.session_state:
+        st.session_state.card_number = "9874569832541458"    
+    if "bin_number" not in st.session_state:
+        st.session_state.bin_number= st.session_state.card_number[:6] 
+    if "card_network" not in st.session_state:
+        st.session_state.card_network="Visa"
+    if "card_tier" not in st.session_state:
+        st.session_state.card_tier = "Silver"  
+    if "card_type" not in st.session_state:
+        st.session_state.card_type = "Debit"      
+    if "phone_number" not in st.session_state:
+        st.session_state.phone_number="+91 1234567891"   
+    if "user_id" not in st.session_state:
+        st.session_state.user_id="1234"       
+    if "user_region" not in st.session_state:
+        st.session_state.user_region = region[0] # Set the default value to the first region in the list (or any other default value) 
+    if "device_info" not in st.session_state:
+        st.session_state.device_info = "Windows"
+    if "device_type" not in st.session_state:
+        st.session_state.device_type = device_info_to_type.get(st.session_state.device_info, "Unknown")
 
     if st.session_state.show_otp_page:
         otp_page()  # Show OTP page if fraud probability is suspicious
@@ -701,7 +817,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
-        
-        
-
