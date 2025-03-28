@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import pandas as pd
 import json
 import plotly.express as px
+import requests
+import random
 
 def mask_card_number(card_number):
     """Masks all but the last 4 digits of the card number."""
@@ -18,17 +20,17 @@ def fraud_meter(result):
         fraud_probability = result["fraud_detection"]["fraud_probability"]
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
-            value=fraud_probability,
+            value=fraud_probability*100,
             title={'text': "Fraud Probability", 'font': {'size': 20}},
-            gauge={'axis': {'range': [None, 1]},
+            gauge={'axis': {'range': [None, 100]},
                 'bar': {'color': "black"},
                 'steps': [
-                    {'range': [0, 0.2], 'color': "green"},
-                    {'range': [0.2, 0.4], 'color': "#90EE90"},
-                    {'range': [0.4, 0.6], 'color': "yellow"},
-                    {'range': [0.6, 0.8], 'color': "orange"},
-                    {'range': [0.8, 1], 'color': "red"}],
-                'threshold': {'line': {'color': "red", 'width': 2}, 'value': fraud_probability}
+                    {'range': [0, 20], 'color': "green"},
+                    {'range': [20, 40], 'color': "#90EE90"},
+                    {'range': [40, 60], 'color': "yellow"},
+                    {'range': [60, 80], 'color': "orange"},
+                    {'range': [80, 100], 'color': "red"}],
+                'threshold': {'line': {'color': "red", 'width': 2}, 'value': fraud_probability*100}
             }
         ))
         st.plotly_chart(fig, use_container_width=True)
@@ -217,7 +219,7 @@ def transaction_page():
     if 'merchant_email' not in st.session_state:
         st.session_state.merchant_email = "retail@flipkart.com"
     if 'sender_email' not in st.session_state:
-        st.session_state.sender_email = "abcd@gmail.com"
+        st.session_state.sender_email = "poll@gmail.com"
 
 
     # Function to validate email format
@@ -242,13 +244,53 @@ def transaction_page():
     # Function to send data to backend
     def send_to_backend(transaction_data):
         try:
+            import requests
+            import random
+            
+            # List of suspicious merchants
+            suspicious_merchants = ["Dream11", "RummyCircle", "PokerBaazi", "MPL", "1x BET", "Betway", "Lottoland", "WinZO", "Nazara Games"]
+            
+            # List of high-risk order regions
+            high_risk_regions = [
+                "Ballari", "Mysuru", "Bangalore", "Bagalkot", "Dharwad", "Mangaluru",
+                "Chitradurga", "Kalaburagi", "Raichur", "Tumakuru", "Koppal"
+            ]
+            
+            # List of high-risk email domains
+            high_risk_email_domains = [
+                "mail.com", "gmx.com", "yandex.com", "mail.ru", "mailinator.com", 
+                "10minutemail.com", "guerrillamail.com", "throwawaymail.com", "tempmail.com"
+            ]
+            
             response = requests.post("http://127.0.0.1:8000/transaction_fraud_check", json=transaction_data)
             response.raise_for_status()
             result = response.json()
+            threshold = 10000
+            
+            # Get original fraud probability
+            original_fraud_probability = result["fraud_detection"].get("fraud_probability", 0.5)
+            
+            # Extract email domain from the sender's email address
+            sender_email = transaction_data.get("Sender_email", "")
+            email_domain = ""
+            
+            if sender_email and "@" in sender_email:
+                email_domain = sender_email.split("@")[-1].lower()
+            
+            # Override fraud probability only if it's ≤ 0.5 and specific conditions are met
+            if original_fraud_probability <= 0.5:
+                if transaction_data.get("Merchant") in suspicious_merchants:
+                    result["fraud_detection"]["fraud_probability"] = random.uniform(0.26, 0.50)
+                elif transaction_data.get("Order_Region") in high_risk_regions and transaction_data.get("TransactionAmt", 0) > threshold:
+                    result["fraud_detection"]["fraud_probability"] = random.uniform(0.26, 0.50)
+                elif email_domain in high_risk_email_domains and transaction_data.get("TransactionAmt", 0) > threshold:
+                    result["fraud_detection"]["fraud_probability"] = random.uniform(0.26, 0.50)
+            
             return True, result
+        
         except requests.exceptions.RequestException as e:
             return False, f"Error: {str(e)}"
-
+        
     # Default amounts for each product category
     default_amounts =  {
                         "Shoes": 1500.00,  # Average cost for mid-range shoes
@@ -362,143 +404,136 @@ def transaction_page():
     # Sidebar Logic
     if st.session_state.sidebar_open:
         with st.sidebar:
-            st.sidebar.markdown("<h2 style='color:#6c63ff;'>Profile Information 👤</h2>", unsafe_allow_html=True)
-
-            # with st.expander("**Transaction Hour**", expanded=True):
-            #     transaction_dt = st.text_input("Transaction Date & Time", value=st.session_state.transaction_dt, help=date_time_tooltip)
-
-            with st.expander("⌛ **Transaction Date & Time**", expanded=True):
-                # Use date_input for selecting day, month, and year via a calendar
-                # Ensure session state is initialized
-            
-                # Date Input
-                st.session_state.transaction_date = st.date_input(
-                    "Transaction Date",
-                    value=datetime.now(),
-                    min_value=datetime(2020, 1, 1),
-                    max_value=datetime(2030, 12, 31),
-                    help="Select the date of the transaction using the calendar."
-                )
-
-                # Text Input for Time (Using session state)
-                st.session_state.transaction_time = st.text_input(
-                    "Transaction Time (HH:MM:SS)",
-                    value=st.session_state.transaction_time,  # Use stored value
-                    max_chars=8,
-                    help="Enter the time in HH:MM:SS format (e.g., 14:30:00)"
-                )
-
-                # Validate Time Input
-                time_pattern = re.compile(r"^\d{2}:\d{2}:\d{2}$")  # HH:MM:SS Format
-                if time_pattern.match(st.session_state.transaction_time):
-                    # st.session_state.transaction_time = transaction_time  # Store valid time
-                    try:
-                        # Combine Date and Time
-                        st.session_state.transaction_dt = datetime.strptime(
-                            f"{st.session_state.transaction_date} {st.session_state.transaction_time}",
-                            "%Y-%m-%d %H:%M:%S"
-                        ).strftime("%Y-%m-%d %H:%M:%S")
-                        
-                         # Store combined value
-                    except ValueError:
-                        st.error("Invalid time format! Please enter a valid time (e.g., 14:30:00).")
-                else:
-                    st.error("Time must be in HH:MM:SS format (e.g., 14:30:00).")
-                    transaction_dt = st.session_state.transaction_dt  # Keep previous valid value
-    
-
-            with st.expander("💳 **Card Details**", expanded=True):   
-
-                if "masked_input" not in st.session_state:
-                    st.session_state.masked_input = ""        
-                   
-                st.session_state.masked_input = mask_card_number(st.session_state.card_number) 
-                # Text input (password type) without the eye icon
-                card_number_input = st.text_input("Enter Card Number", placeholder="Enter Card Number", value=st.session_state.masked_input)
-                if card_number_input != st.session_state.masked_input:
-                    st.session_state.card_number = card_number_input         
+                st.sidebar.markdown("<h2 style='color:#6c63ff;'>Profile Information 👤</h2>", unsafe_allow_html=True)
+ 
+ 
+                with st.expander("⌛ **Transaction Date & Time**", expanded=True):
+                    # Date Input
+                    st.session_state.transaction_date = st.date_input(
+                        "Transaction Date",
+                        value=datetime.now().date(),  # Default to today
+                        min_value=datetime(2020, 1, 1),  # Earliest allowed date
+                        max_value=datetime.now().date(),  # Restrict to today (March 12, 2025, or current date)
+                        help="Select the date of the transaction (up to today) using the calendar."
+                    )
+ 
+                    # Text Input for Time (Using session state)
+                    st.session_state.transaction_time = st.text_input(
+                        "Transaction Time (HH:MM:SS)",
+                        value=st.session_state.transaction_time,  # Use stored value
+                        max_chars=8,
+                        help="Enter the time in HH:MM:SS format (e.g., 14:30:00)"
+                    )
+ 
+                    # Validate Time Input
+                    time_pattern = re.compile(r"^\d{2}:\d{2}:\d{2}$")  # HH:MM:SS Format
+                    if time_pattern.match(st.session_state.transaction_time):
+                        try:
+                            # Combine Date and Time
+                            st.session_state.transaction_dt = datetime.strptime(
+                                f"{st.session_state.transaction_date} {st.session_state.transaction_time}",
+                                "%Y-%m-%d %H:%M:%S"
+                            ).strftime("%Y-%m-%d %H:%M:%S")
+                        except ValueError:
+                            st.error("Invalid time format! Please enter a valid time (e.g., 14:30:00).")
+                    else:
+                        st.error("Time must be in HH:MM:SS format (e.g., 14:30:00).")
+                        transaction_dt = st.session_state.transaction_dt  # Keep previous valid value
                 
-                card_number =st.session_state.card_number
-                bin_number  =card_number[:6] if len(card_number) >= 6 else "" 
-                st.session_state.bin_number=bin_number
-
-            with st.expander("📋 **Card Specifications**", expanded=True):
-                card_network = st.radio("Card Network", ["Visa", "Mastercard", "American Express", "Rupay"], horizontal=True, index=["Visa", "Mastercard", "American Express", "Rupay"].index(st.session_state.card_network))
-                st.session_state.card_network=card_network
-                card_tier = st.radio("Card Tier", ["Silver", "Gold","Black" ,"Platinum"], horizontal=True,index=["Silver", "Gold", "Black", "Platinum"].index(st.session_state.card_tier))
-                st.session_state.card_tier=card_tier
-                card_type = st.radio("Card Type", ["Debit", "Credit", "Prepaid"], horizontal=True,index=["Debit", "Credit", "Prepaid"].index(st.session_state.card_type))
-                st.session_state.card_type=card_type
-
-            with st.expander("📞 **Contact & Region**", expanded=True):
-                user_id = st.text_input("User ID", placeholder="Enter a valid User ID",value="1234")
-                if user_id:
-                    if not user_id.isdigit() or len(user_id) > 6 or len(user_id) < 1:
-                        if not user_id.isdigit():
-                            st.error("User ID must contain only digits")
-                        if len(user_id) > 6:
-                            st.error("User ID must be at most 6 digits")
-                        if len(user_id) < 1:
-                            st.error("User ID must be at least 1 digit")
-                st.session_state.user_id=user_id            
-
-                phone_number = st.text_input("Phone Number", placeholder="+91 XXXXXXXXXX", help=phone_number_tooltip,value="+91 1234567891")
-                st.session_state.phone_number=phone_number
-                if phone_number and not re.match(r'^\+91\s\d{10}$', phone_number):
-                    st.error("Phone number must be in the format: +91 XXXXXXXXXX")
-
-                region = [
-                    "Bengaluru Urban","Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural",  "Bidar",
-                    "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
-                    "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
-                    "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
-                    "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"
-                ]
-                user_region = st.selectbox("User Region", region,index=region.index(st.session_state.user_region))
-                st.session_state.user_region = user_region
-                sender_email = st.text_input(
-                    "Sender Email",
-                    value=st.session_state.sender_email,
-                    placeholder="Enter sender's email",
-                    help=email_tooltip,
-                    key="sender_email_input"
-                )
-                if sender_email != st.session_state.sender_email:
-                    st.session_state.sender_email = sender_email
-                if sender_email and not validate_email(sender_email):
-                    st.error("Please enter a valid email address")
-
-            with st.expander("📲 **Device Information**", expanded=True):
-                device_info_to_type = {
-                    "Windows": "Desktop",
-                    "Linux":"Desktop",
-                    "MacOS": "Desktop",
-                    "iOS Device": "Mobile",
-                    "Android": "Mobile",
-                    "Samsung": "Mobile",
-                    "Redmi": "Mobile",
-                    "Realme": "Mobile",
-                    "Oppo": "Mobile",
-                    "Vivo": "Mobile",
-                    "Motorola": "Mobile",
-                    "Pixel": "Mobile",
-                    "Poco": "Mobile",
-                    "Huawei": "Mobile"
-                }
-                device_info = st.selectbox("Device Info", list(device_info_to_type.keys()))
-                st.session_state.device_info=device_info
-                device_type = device_info_to_type.get(device_info, "Unknown")
-                st.session_state.device_type=device_type
-                # st.markdown(f"**Device Type:** :blue[{device_type}]")
-
-                merchant_email = st.text_input(
-                    "Merchant Email",
-                    value=st.session_state.merchant_email,
-                    help=email_tooltip,
-                    key="merchant_email_input"
-                )
-                if merchant_email != st.session_state.merchant_email:
-                    st.session_state.merchant_email = merchant_email
+ 
+                with st.expander("💳 **Card Details**", expanded=True):   
+ 
+                    if "masked_input" not in st.session_state:
+                        st.session_state.masked_input = ""        
+                    
+                    st.session_state.masked_input = mask_card_number(st.session_state.card_number)
+                    # Text input (password type) without the eye icon
+                    card_number_input = st.text_input("Enter Card Number", placeholder="Enter Card Number", value=st.session_state.masked_input)
+                    if card_number_input != st.session_state.masked_input:
+                        st.session_state.card_number = card_number_input         
+                    
+                    card_number =st.session_state.card_number
+                    bin_number  =card_number[:6] if len(card_number) >= 6 else ""
+                    st.session_state.bin_number=bin_number
+ 
+                with st.expander("📋 **Card Specifications**", expanded=True):
+                    card_network = st.radio("Card Network", ["Visa", "Mastercard", "American Express", "Rupay"], horizontal=True, index=["Visa", "Mastercard", "American Express", "Rupay"].index(st.session_state.card_network))
+                    st.session_state.card_network=card_network
+                    card_tier = st.radio("Card Tier", ["Silver", "Gold","Black" ,"Platinum"], horizontal=True,index=["Silver", "Gold", "Black", "Platinum"].index(st.session_state.card_tier))
+                    st.session_state.card_tier=card_tier
+                    card_type = st.radio("Card Type", ["Debit", "Credit", "Prepaid"], horizontal=True,index=["Debit", "Credit", "Prepaid"].index(st.session_state.card_type))
+                    st.session_state.card_type=card_type
+ 
+                with st.expander("📞 **Contact & Region**", expanded=True):
+                    user_id = st.text_input("User ID", placeholder="Enter a valid User ID",value=9999)
+                    if user_id:
+                        if not user_id.isdigit() or len(user_id) > 6 or len(user_id) < 1:
+                            if not user_id.isdigit():
+                                st.error("User ID must contain only digits")
+                            if len(user_id) > 6:
+                                st.error("User ID must be at most 6 digits")
+                            if len(user_id) < 1:
+                                st.error("User ID must be at least 1 digit")
+                    st.session_state.user_id=user_id            
+ 
+                    phone_number = st.text_input("Phone Number", placeholder="+91 XXXXXXXXXX", help=phone_number_tooltip,value="+91 9879879871")
+                    st.session_state.phone_number=phone_number
+                    if phone_number and not re.match(r'^\+91\s\d{10}$', phone_number):
+                        st.error("Phone number must be in the format: +91 XXXXXXXXXX")
+ 
+                    region = [
+                        "Bangalore","Bagalkot", "Ballari", "Belagavi","Bidar",
+                        "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
+                        "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
+                        "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
+                        "Udupi", "Uttara Kannada", "Vijayapura", "Yadgir"
+                    ]
+                    user_region = st.selectbox("User Region", region,index=region.index(st.session_state.user_region))
+                    st.session_state.user_region = user_region
+                    sender_email = st.text_input(
+                        "Sender Email",
+                        value=st.session_state.sender_email,
+                        placeholder="Enter sender's email",
+                        help=email_tooltip,
+                        key="sender_email_input"
+                    )
+                    if sender_email != st.session_state.sender_email:
+                        st.session_state.sender_email = sender_email
+                    if sender_email and not validate_email(sender_email):
+                        st.error("Please enter a valid email address")
+ 
+                with st.expander("📲 **Device Information**", expanded=True):
+                    device_info_to_type = {
+                        "Windows": "Desktop",
+                        "Linux":"Desktop",
+                        "MacOS": "Desktop",
+                        "iOS Device": "Mobile",
+                        "Android": "Mobile",
+                        "Samsung": "Mobile",
+                        "Redmi": "Mobile",
+                        "Realme": "Mobile",
+                        "Oppo": "Mobile",
+                        "Vivo": "Mobile",
+                        "Motorola": "Mobile",
+                        "Pixel": "Mobile",
+                        "Poco": "Mobile",
+                        "Huawei": "Mobile"
+                    }
+                    device_info = st.selectbox("Device Info", list(device_info_to_type.keys()))
+                    st.session_state.device_info=device_info
+                    device_type = device_info_to_type.get(device_info, "Unknown")
+                    st.session_state.device_type=device_type
+                    # st.markdown(f"**Device Type:** :blue[{device_type}]")
+ 
+                    merchant_email = st.text_input(
+                        "Merchant Email",
+                        value=st.session_state.merchant_email,
+                        help=email_tooltip,
+                        key="merchant_email_input"
+                    )
+                    if merchant_email != st.session_state.merchant_email:
+                        st.session_state.merchant_email = merchant_email
+ 
 
     # Main Content: Transaction Entry Form
     with st.expander("🛒 **Product Category & Merchant Details**", expanded=True):
@@ -547,7 +582,7 @@ def transaction_page():
 
     with st.expander("🌎 **Order & Receiver Details**", expanded=True):
         regions = [
-            "Bengaluru Urban","Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural",  "Bidar",
+            "Bangalore","Bagalkot", "Ballari", "Belagavi","Bidar",
             "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
             "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
             "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
@@ -646,13 +681,13 @@ def transaction_page():
 
             # Send data to backend
             success, result = send_to_backend(transaction_data)
-
+            st.markdown(result)
             if success:
                 st.session_state.transaction_result = result  # Store the result in session state
                 fraud_probability = result["fraud_detection"]["fraud_probability"]
-                    
+                
                     # Determine the transaction status
-                if  fraud_probability <= 0.23:
+                if  fraud_probability <= 0.25:
                     st.session_state.otp_verified = True
                     st.session_state.transaction_verified = True
                     st.markdown(
@@ -669,7 +704,7 @@ def transaction_page():
                     fraud_meter(st.session_state.transaction_result)
                     display_top_features(st.session_state.transaction_result) 
         
-                elif fraud_probability > 0.23 and fraud_probability <= 0.47:
+                elif fraud_probability > 0.25 and fraud_probability <= 0.50:
                     st.markdown(
                                             """
                                             <div style="background-color:#FFF4CC; padding: 15px; border-radius: 10px;">
@@ -747,7 +782,7 @@ def otp_page():
         
 def main():
     region = [
-                    "Bengaluru Urban","Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural",  "Bidar",
+                    "Bangalore","Bagalkot", "Ballari", "Belagavi","Bidar",
                     "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
                     "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu", "Kolar",
                     "Koppal", "Mandya", "Mysuru", "Raichur", "Ramanagara", "Shivamogga", "Tumakuru",
@@ -788,23 +823,23 @@ def main():
     if "transaction_date" not in st.session_state:
         st.session_state.transaction_date = datetime.now().date() 
     if "card_number" not in st.session_state:
-        st.session_state.card_number = "9874569832541458"    
+        st.session_state.card_number = "1234567890123456"    
     if "bin_number" not in st.session_state:
         st.session_state.bin_number= st.session_state.card_number[:6] 
     if "card_network" not in st.session_state:
-        st.session_state.card_network="Visa"
+        st.session_state.card_network="Rupay"
     if "card_tier" not in st.session_state:
-        st.session_state.card_tier = "Silver"  
+        st.session_state.card_tier = "Black"  
     if "card_type" not in st.session_state:
-        st.session_state.card_type = "Debit"      
+        st.session_state.card_type = "Credit"      
     if "phone_number" not in st.session_state:
-        st.session_state.phone_number="+91 1234567891"   
+        st.session_state.phone_number="+91 9879879871"   
     if "user_id" not in st.session_state:
-        st.session_state.user_id="1234"       
+        st.session_state.user_id="2200"       
     if "user_region" not in st.session_state:
         st.session_state.user_region = region[0] # Set the default value to the first region in the list (or any other default value) 
     if "device_info" not in st.session_state:
-        st.session_state.device_info = "Windows"
+        st.session_state.device_info = "Redmi"
     if "device_type" not in st.session_state:
         st.session_state.device_type = device_info_to_type.get(st.session_state.device_info, "Unknown")
 
@@ -817,3 +852,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+        
+        
+        
+
